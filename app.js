@@ -4,6 +4,11 @@ var moongose = require('mongoose');
 var appRoutes = require('./rutas/app');
 var appRoutesUsuario = require('./rutas/usuario');
 var appRoutesUsuarioLogin = require('./rutas/login');
+var appRoutesHospital = require('./rutas/hospital');
+var appRoutesMedico = require('./rutas/medico');
+var appRoutesBusqueda = require('./rutas/busqueda');
+var appRoutesUpload = require('./rutas/upload');
+var appRoutesImagen = require('./rutas/imagenes');
 var bodyParser = require('body-parser');
 
 
@@ -24,6 +29,11 @@ moongose.connection.openUri('mongodb://localhost:27017/hospitalDB', { useNewUrlP
 //rutas
 app.use('/usuario', appRoutesUsuario);
 app.use('/login', appRoutesUsuarioLogin);
+app.use('/hospital', appRoutesHospital);
+app.use('/medico', appRoutesMedico);
+app.use('/busqueda', appRoutesBusqueda);
+app.use('/upload', appRoutesUpload);
+app.use('/img', appRoutesImagen);
 app.use('/', appRoutes);
 
 //escuchar servidor
