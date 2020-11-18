@@ -4,9 +4,11 @@ var app = express();
 var jwt = require('jsonwebtoken');
 var SEED = require('../config/config').SEED;
 var CLIENT_ID = require('../config/config').CLIENT_ID;
+var mdAutenticacion = require('../middelware/autenticacion');
 
 
-
+//Rntxm1ucYZKUbpkP
+//frank
 var Usuario = require('../models/usuario');
 //GOOGLE
 const { OAuth2Client } = require('google-auth-library');
@@ -32,6 +34,17 @@ async function verify(token) {
         // payload
     }
 }
+
+app.get('/renuevatoken', mdAutenticacion.verificaToken, (req, res) => {
+
+    var token = jwt.sign({ usuario: req.usuario }, SEED, { expiresIn: 14400 })
+
+    res.status(200).json({
+        ok: 200,
+        token: token
+    })
+})
+
 // ==================================
 // AUTENTICACION GOOGLE
 // ==================================
@@ -125,6 +138,7 @@ app.post('/', (req, res) => {
 //crea el token y responde con estado 200
 function generarTokenOK(usuarioBD, res) {
     // Crear un token
+
     var token = jwt.sign({ usuario: usuarioBD }, SEED, { expiresIn: 14400 })
     res.status(200).json({
         ok: true,
@@ -132,8 +146,41 @@ function generarTokenOK(usuarioBD, res) {
         usuario: usuarioBD,
         token: token,
         id: usuarioBD._id,
+        menu: obtenerMenu(usuarioBD.role)
     });
 
+}
+
+function obtenerMenu(ROLE) {
+    var menu = [
+        {
+            titulo: 'Principal',
+            icono: 'mdi mdi-gauge',
+            submenu: [
+                { titulo: 'Dashboard', url: '/' },
+                { titulo: 'ProgressBar', url: 'progress' },
+                { titulo: 'Gráficas', url: 'graficas1' },
+                { titulo: 'Promesas', url: 'promesas' },
+                { titulo: 'Rxjs', url: 'rxjs' },
+            ]
+        },
+        {
+            titulo: 'Mantenimientos',
+            icono: 'mdi mdi-folder-lock-open',
+            submenu: [
+                // { titulo: 'Usuarios', url: '/usuarios' },
+                { titulo: 'Hospitales', url: 'hospitales' },
+                { titulo: 'Medicos', url: 'medicos' },
+            ]
+        }
+    ];
+
+    if (ROLE === 'ADMIN_ROLE') {
+        //unshift anade al arreglo al inicio, push al final
+        menu[1].submenu.unshift({ titulo: 'Usuarios', url: '/usuarios' });
+    }
+
+    return menu;
 }
 
 module.exports = app;

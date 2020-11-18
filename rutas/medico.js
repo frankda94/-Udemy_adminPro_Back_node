@@ -12,7 +12,7 @@ app.get('/', (req, res) => {
 
     Medico.find({})
         .skip(desde)
-        .limit(5)
+        .limit(3)
         .populate('usuario', 'nombre email')
         .populate('hospital')
         .exec(
@@ -24,7 +24,7 @@ app.get('/', (req, res) => {
                         errors: err
                     });
                 }
-                Medico.count({}, (err, count) => {
+                Medico.countDocuments({}, (err, count) => {
                     res.status(200).json({
                         ok: true,
                         mensaje: 'get de medicos 200!',
@@ -64,6 +64,40 @@ app.post('/', mdAutenticacion.verificaToken, (req, res) => {
     });
 });
 
+// ==================================
+// Obtener medico
+// ==================================
+app.get('/:id', (req, res) => {
+
+    var id = req.params.id;
+
+    Medico.findById(id)
+        .populate('usuario', 'nombre email img')
+        .populate('hospital')
+        .exec((err, medico) => {
+
+            if (err) {
+                return res.status(500).json({
+                    ok: false,
+                    mensaje: 'error al buscar  medico',
+                    errors: err
+                });
+            }
+            if (!medico) {
+                return res.status(400).json({
+                    ok: false,
+                    mensaje: 'el medico con el id ' + id + ' no existe',
+                    errors: err
+                });
+            }
+            res.status(200).json({
+                ok: true,
+                medico: medico,
+                mensaje: "retornando medico ok"
+            })
+        })
+
+})
 
 //==================================
 //Actualizar un medico

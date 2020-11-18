@@ -77,7 +77,6 @@ function subirPorTipo(tipo, id, nombreArchivo, res) {
         default:
             break;
     }
-
 }
 
 function subirPorUsuario(id, nombreArchivo, res) {

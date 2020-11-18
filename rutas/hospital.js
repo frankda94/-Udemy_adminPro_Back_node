@@ -8,11 +8,14 @@ var Hospital = require('../models/hospital');
 app.get('/', (req, res) => {
 
     var desde = req.query.desde || 0;
+    var limit = req.query.limit || 0;
+
     desde = Number(desde);
+    limit = Number(limit);
 
     Hospital.find({})
         .skip(desde)
-        .limit(5)
+        .limit(limit)
         .populate('usuario', 'nombre email')
         .exec(
             (err, hospitales) => {
@@ -23,7 +26,7 @@ app.get('/', (req, res) => {
                         errors: err
                     });
                 }
-                Hospital.count({}, (err, count) => {
+                Hospital.countDocuments({}, (err, count) => {
                     res.status(200).json({
                         ok: true,
                         mensaje: 'get de hospitales 200!',
@@ -134,5 +137,35 @@ app.delete('/:id', mdAutenticacion.verificaToken, (req, res) => {
     })
 
 });
+
+// ==========================================
+// Obtener Hospital por ID
+// ==========================================
+app.get('/:id', (req, res) => {
+    var id = req.params.id;
+    Hospital.findById(id)
+        .populate('usuario', 'nombre img email')
+        .exec((err, hospital) => {
+            if (err) {
+                return res.status(500).json({
+                    ok: false,
+                    mensaje: 'Error al buscar hospital',
+                    errors: err
+                });
+            }
+            if (!hospital) {
+                return res.status(400).json({
+                    ok: false,
+                    mensaje: 'El hospital con el id ' + id + 'no existe',
+                    errors: { message: 'No existe un hospital con ese ID' }
+                });
+            }
+            res.status(200).json({
+                ok: true,
+                hospital: hospital,
+                mensaje: "obteniendo hospital por id"
+            });
+        })
+})
 
 module.exports = app;

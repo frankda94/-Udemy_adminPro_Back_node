@@ -1,66 +1,71 @@
-var express = require('express');
+const { response } = require('express');
+const Hospital = require('../models/hospital');
+const Medico = require('../models/medico');
+const Usuario = require('../models/usuario');
 
-var app = express();
+const busquedaPorColeccion = async (req, res = response) => {
 
-var Hospital = require('../models/hospital');
-var Medico = require('../models/medico');
-var Usuario = require('../models/usuario');
-
-// ==================================
-// Busqueda por coleccion
-// ==================================
-app.get('/coleccion/:tabla/:busqueda', (req, res) => {
-    var tabla = req.params.tabla;
-    var busqueda = req.params.busqueda;
+    const coleccion = req.params.coleccion;
+    const busqueda = req.params.busqueda;
     var regex = new RegExp(busqueda, 'i');
     var promesa;
-    switch (tabla) {
-        case 'hospital':
-            promesa = buscarHospitales(busqueda, regex);
-            break;
-        case 'usuario':
-            promesa = buscarUsuarios(busqueda, regex);
-            break;
-        case 'medico':
-            promesa = buscarMedicos(busqueda, regex);
-            break;
-        default:
-            return res.status(400).json({
-                ok: false,
-                mensaje: 'coleccion no encontrada'
-            });
-    }
-    promesa.then(resultado => {
-        res.status(200).json({
-            ok: true,
-            [tabla]: resultado
+
+    try {
+        switch (coleccion) {
+            case 'hospitales':
+                promesa = buscarHospitales(regex);
+                break;
+            case 'usuarios':
+                promesa = buscarUsuarios(regex);
+                break;
+            case 'medicos':
+                promesa = buscarMedicos(regex);
+                break;
+            default:
+                return res.status(400).json({
+                    ok: false,
+                    mensaje: 'coleccion no encontrada'
+                });
+        }
+        promesa.then(resultado => {
+            res.status(200).json({
+                ok: true,
+                [coleccion]: resultado
+            })
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            ok: false,
+            mensaje: "error al buscar coleccion"
         })
-    })
-})
+    }
+}
+
 
 // ==================================
 //  Busqueda por todo
 // ==================================
-app.get('/todo/:busqueda', (req, res, next) => {
+const busquedaDeTodo = async (req, res, next) => {
 
     var busqueda = req.params.busqueda;
     var regex = new RegExp(busqueda, 'i')
 
-    Promise.all([
-        buscarHospitales(busqueda, regex),
-        buscarMedicos(busqueda, regex),
-        buscarUsuarios(busqueda, regex)])
+    await Promise.all([
+        buscarHospitales(regex),
+        buscarMedicos(regex),
+        buscarUsuarios(regex)])
         .then(respuestas => {
             res.status(200).json({
                 ok: true,
                 hospitales: respuestas[0],
                 medicos: respuestas[1],
                 usuarios: respuestas[2],
-            })
+            });
         });
-});
+}
 
-function buscarHospitales(busqueda, regex) {
+function buscarHospitales(regex) {
 
     return new Promise((resolve, reject) => {
 
@@ -76,7 +81,7 @@ function buscarHospitales(busqueda, regex) {
     });
 }
 
-function buscarMedicos(busqueda, regex) {
+function buscarMedicos(regex) {
 
     return new Promise((resolve, reject) => {
         Medico.find({ nombre: regex }, (err, medicos) => {
@@ -89,7 +94,7 @@ function buscarMedicos(busqueda, regex) {
     });
 }
 
-function buscarUsuarios(busqueda, regex) {
+function buscarUsuarios(regex) {
     return new Promise((resolve, reject) => {
         Usuario.find({}, 'nombre email role img')
             .or([{ 'nombre': regex }, { 'email': regex }])
@@ -102,4 +107,8 @@ function buscarUsuarios(busqueda, regex) {
     });
 }
 
-module.exports = app;
+
+module.exports = {
+    busquedaPorColeccion,
+    busquedaDeTodo,
+}

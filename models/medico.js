@@ -9,5 +9,9 @@ var medicoSchema = new Schema({
     hospital: { type: Schema.Types.ObjectId, ref: 'Hospital', required: [true, 'El id hospital es un campo obligatorio'] }
 });
 
+medicoSchema.method('toJSON', function () {
+    const { __v, ...Object } = this.toObject();
+    return Object;
+})
 
 module.exports = mongoose.model('Medico', medicoSchema);
