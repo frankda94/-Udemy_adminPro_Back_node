@@ -53,7 +53,7 @@ const login = async (req, res = response) => {
         })
     }
 }
- 
+
 // ==================================
 // autenticacion GOOGLE
 // ==================================
